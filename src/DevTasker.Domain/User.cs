@@ -23,4 +23,3 @@ public class User
         Name = newName;
     }
 }
-
