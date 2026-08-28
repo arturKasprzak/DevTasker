@@ -47,9 +47,25 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+app.MapPost("api/tasks/assign", async (AssignTaskRequest request, TaskAssignedNotificationService service) =>
+{
+    try
+    {
+        await service.NotifyTaskAssignedAsync(request.UserId, request.TaskTitle);
+
+        return Results.Ok();
+    }
+    catch (UserNotFoundException)
+    {
+        return Results.NotFound();
+    }
+});
+
 app.Run();
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
+
+record AssignTaskRequest(Guid UserId, string TaskTitle);
