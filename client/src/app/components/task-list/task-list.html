@@ -1,1 +1,8 @@
-<p>task-list works!</p>
+<ul>
+    @for (task of tasks(); track task.id) {
+        <li>{{ task.title }} - {{ task.description }} - {{ task.status }} - {{ task.userName }}</li>
+    }
+    @empty {
+        <li>No tasks found</li>
+    }
+</ul>

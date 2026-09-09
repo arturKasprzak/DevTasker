@@ -10,7 +10,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<INotificationSender, EmailNotificationSender>();
 builder.Services.AddScoped<IUserRepository, EfUserRepository>();
+builder.Services.AddScoped<ITaskRepository, EfTaskRepository>();
 builder.Services.AddScoped<TaskAssignedNotificationService>();
+builder.Services.AddScoped<TaskFetchService>();
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AngularClient", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -28,24 +41,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.UseCors("AngularClient");
 
 app.MapPost("api/tasks/assign", async (AssignTaskRequest request, TaskAssignedNotificationService service) =>
 {
@@ -61,11 +57,22 @@ app.MapPost("api/tasks/assign", async (AssignTaskRequest request, TaskAssignedNo
     }
 });
 
+app.MapGet("api/tasks", async (TaskFetchService service) =>
+{
+    var tasks = await service.GetAllTaskItemsAsync();
+
+    var response = tasks.Select(t => new TaskResponse(
+        t.Id,
+        t.Title,
+        t.Description,
+        t.Status,
+        t.AssignedUser?.Name ?? "Unassigned"));
+
+    return Results.Ok(response);
+});
+
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
-
 record AssignTaskRequest(Guid UserId, string TaskTitle);
+
+record TaskResponse(Guid Id, string Title, string? Description, bool Status, string UserName);

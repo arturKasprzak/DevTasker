@@ -8,6 +8,10 @@ public class TaskItem
     public bool Status { get; private set; }
     public User? AssignedUser { get; private set; }
 
+    private TaskItem()
+    {        
+    }
+
     public TaskItem(string title, string? description, bool? status, User? assignedUser)
     {
         Id = Guid.NewGuid();

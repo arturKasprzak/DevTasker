@@ -4,6 +4,7 @@ using DevTasker.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DevTasker.Infrastructure.Migrations
 {
     [DbContext(typeof(DevTaskerDbContext))]
-    partial class DevTaskerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260904125426_AddTaskItemEntity")]
+    partial class AddTaskItemEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,15 +50,6 @@ namespace DevTasker.Infrastructure.Migrations
                     b.HasIndex("AssignedUserId");
 
                     b.ToTable("Tasks");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            AssignedUserId = new Guid("11111111-1111-1111-1111-111111111111"),
-                            Status = true,
-                            Title = "Add TextBox"
-                        });
                 });
 
             modelBuilder.Entity("DevTasker.Domain.User", b =>

@@ -12,6 +12,7 @@ public class DevTaskerDbContext : DbContext
     }
 
     public DbSet<User> Users { get; set; }
+    public DbSet<TaskItem> Tasks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,6 +28,22 @@ public class DevTaskerDbContext : DbContext
                 Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                 Email = "test.user@devtasker.com",
                 Name = "Test User"
+            });
+        });
+
+        modelBuilder.Entity<TaskItem>(entity =>
+        {
+            entity.Property(x => x.Title).HasMaxLength(256);
+            entity.HasOne(t => t.AssignedUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasData(new
+            {
+                Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                Title = "Add TextBox",
+                Status = true,
+                AssignedUserId = Guid.Parse("11111111-1111-1111-1111-111111111111")
             });
         });
     }
