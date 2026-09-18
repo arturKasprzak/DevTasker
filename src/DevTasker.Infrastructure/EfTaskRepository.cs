@@ -16,4 +16,15 @@ public class EfTaskRepository : ITaskRepository
     {
         return await _devTaskerDbContext.Tasks.Include(x => x.AssignedUser).ToListAsync();
     }
+
+    public async Task AddNewTaskItemAsync(TaskItem item)
+    {
+        _devTaskerDbContext.Tasks.Add(item);
+        await _devTaskerDbContext.SaveChangesAsync();
+    }
+
+    public async Task<TaskItem?> GetTaskItemAsync(Guid id)
+    {
+        return await _devTaskerDbContext.Tasks.Include(x => x.AssignedUser).FirstOrDefaultAsync(x => x.Id == id);
+    }
 }
