@@ -1,6 +1,9 @@
 <ul>
     @for (task of tasks(); track task.id) {
-        <li>{{ task.title }} - {{ task.description }} - {{ task.status }} - {{ task.userName }}</li>
+        <li>
+            {{ task.title }} - {{ task.description }} - {{ task.status }} - {{ task.userName }}
+            <button (click)="onDelete(task.id)">Delete</button>
+        </li>
     }
     @empty {
         <li>No tasks found</li>

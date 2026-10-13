@@ -18,4 +18,8 @@ export class Task {
     createTask(request: CreateTaskRequest): Observable<string> {
         return this.http.post<string>(this.apiUrl, request);
     }
+
+    deleteTask(id: string): Observable<void> {
+        return this.http.delete<void>(this.apiUrl + `/${id}`);
+    }
 }

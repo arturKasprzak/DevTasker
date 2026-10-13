@@ -27,4 +27,15 @@ public class EfTaskRepository : ITaskRepository
     {
         return await _devTaskerDbContext.Tasks.Include(x => x.AssignedUser).FirstOrDefaultAsync(x => x.Id == id);
     }
+
+    public async Task<TaskItem?> RemoveTaskItemAsync(Guid id)
+    {
+        var taskItem = await _devTaskerDbContext.Tasks.FirstOrDefaultAsync(x => x.Id == id);
+        if (taskItem != null)
+        {
+            _devTaskerDbContext.Tasks.Remove(taskItem);
+            await _devTaskerDbContext.SaveChangesAsync();
+        }
+        return taskItem;
+    }
 }

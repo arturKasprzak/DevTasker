@@ -15,6 +15,27 @@ export class TaskList implements OnInit{
   tasks = signal<TaskResponse[]>([]);
 
   ngOnInit(): void {
+    this.loadTasks();
+  }
+
+  onDelete(id: string): void {
+    this.taskService.deleteTask(id).subscribe({
+      next: () => {
+        this.loadTasks();
+      },
+      error: (err) => {
+        if(err.status === 404){
+          this.loadTasks();          
+          alert('This task has already been deleted.');
+        }
+        else {
+          alert('An error occurred during deletion.');
+        }
+      }
+    });
+  }
+
+  loadTasks(): void {
     this.taskService.getTasks().subscribe((tasks) => {
       this.tasks.set(tasks);
     });

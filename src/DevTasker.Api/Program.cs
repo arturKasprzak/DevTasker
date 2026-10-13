@@ -13,8 +13,7 @@ builder.Services.AddScoped<INotificationSender, EmailNotificationSender>();
 builder.Services.AddScoped<IUserRepository, EfUserRepository>();
 builder.Services.AddScoped<ITaskRepository, EfTaskRepository>();
 builder.Services.AddScoped<TaskAssignedNotificationService>();
-builder.Services.AddScoped<TaskFetchService>();
-builder.Services.AddScoped<TaskCreationService>();
+builder.Services.AddScoped<TaskService>();
 
 
 builder.Services.AddCors(options =>
@@ -59,7 +58,7 @@ app.MapPost("api/tasks/assign", async (AssignTaskRequest request, TaskAssignedNo
     }
 });
 
-app.MapGet("api/tasks", async (TaskFetchService service) =>
+app.MapGet("api/tasks", async (TaskService service) =>
 {
     var tasks = await service.GetAllTaskItemsAsync();
 
@@ -73,11 +72,11 @@ app.MapGet("api/tasks", async (TaskFetchService service) =>
     return Results.Ok(response);
 });
 
-app.MapGet("api/tasks/{id}", async (Guid id, ITaskRepository repo) =>
+app.MapGet("api/tasks/{id}", async (Guid id, TaskService service) =>
 {
     try
     {
-        var task = await repo.GetTaskItemAsync(id);
+        var task = await service.GetTaskItemAsync(id);
         if (task is null)
             throw new TaskNotFoundException(id);
 
@@ -96,7 +95,7 @@ app.MapGet("api/tasks/{id}", async (Guid id, ITaskRepository repo) =>
     }
 });
 
-app.MapPost("api/tasks", async (CreateTaskRequest request, TaskCreationService service, IUserRepository userRepo) =>
+app.MapPost("api/tasks", async (CreateTaskRequest request, TaskService service, IUserRepository userRepo) =>
 {
     try
     {
@@ -114,6 +113,21 @@ app.MapPost("api/tasks", async (CreateTaskRequest request, TaskCreationService s
         return Results.Created($"/api/tasks/{taskItem.Id}", taskItem.Id);
     }
     catch (UserNotFoundException)
+    {
+        return Results.NotFound();
+    }
+});
+
+app.MapDelete("api/tasks/{id}", async (Guid id, TaskService service) =>
+{
+    try
+    {
+        var taskItem = await service.RemoveTaskItemAsync(id);
+        if (taskItem is null)
+            throw new TaskNotFoundException(id);
+        return Results.NoContent();
+    }
+    catch (TaskNotFoundException)
     {
         return Results.NotFound();
     }
