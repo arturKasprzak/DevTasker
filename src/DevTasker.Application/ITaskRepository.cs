@@ -7,4 +7,6 @@ public interface ITaskRepository
     Task<TaskItem?> GetTaskItemAsync(Guid id);
     Task AddNewTaskItemAsync(TaskItem item);
     Task<TaskItem?> RemoveTaskItemAsync(Guid id);
+    Task<TaskItem?> UpdateTaskItemAsync(Guid id, UpdateTaskItemRequest request);
+
 }

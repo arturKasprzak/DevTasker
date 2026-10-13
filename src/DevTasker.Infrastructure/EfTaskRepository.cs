@@ -38,4 +38,41 @@ public class EfTaskRepository : ITaskRepository
         }
         return taskItem;
     }
+
+    public async Task<TaskItem?> UpdateTaskItemAsync(Guid id, UpdateTaskItemRequest request)
+    {
+        var taskItem = await _devTaskerDbContext.Tasks.FirstOrDefaultAsync(x => x.Id == id);
+        if (taskItem != null)
+        {
+            taskItem.ChangeTitle(request.Title);
+            taskItem.ChangeDescription(request.Description);
+
+            if (request.Status == true)
+            {
+                taskItem.MarkAsCompleted();
+            }
+            else
+            {
+                taskItem.MarkAsIncomplete();
+            }
+
+            if(request.UserId.HasValue)
+            {
+                var user = await _devTaskerDbContext.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
+                if(user is null)
+                {
+                    throw new UserNotFoundException(request.UserId.Value);
+                }
+                taskItem.AssignTo(user);
+            }
+            else
+            {
+                taskItem.AssignTo(null);
+            }
+                
+            await _devTaskerDbContext.SaveChangesAsync();
+        }
+
+        return taskItem;
+    }
 }

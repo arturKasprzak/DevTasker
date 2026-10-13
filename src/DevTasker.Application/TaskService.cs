@@ -30,4 +30,9 @@ public class TaskService
     {
         return _taskRepository.RemoveTaskItemAsync(id);
     }
+
+    public Task<TaskItem?> UpdateTaskItemAsync(Guid id, UpdateTaskItemRequest request)
+    {
+        return _taskRepository.UpdateTaskItemAsync(id, request);
+    }
 }

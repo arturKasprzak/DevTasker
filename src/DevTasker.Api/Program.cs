@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 using DevTasker.Application;
 using DevTasker.Domain;
 using DevTasker.Infrastructure;
@@ -133,9 +135,40 @@ app.MapDelete("api/tasks/{id}", async (Guid id, TaskService service) =>
     }
 });
 
+app.MapPut("api/tasks/{id}", async (Guid id, UpdateTaskRequest request, TaskService service) =>
+{
+    try
+    {
+        var appRequest = new UpdateTaskItemRequest(request.Title, request.Description, request.Status, request.UserId);
+        var taskItem = await service.UpdateTaskItemAsync(id, appRequest);
+        if (taskItem is null)
+        {
+            throw new TaskNotFoundException(id);
+        }
+
+        var response = new TaskResponse(
+        taskItem.Id,
+        taskItem.Title,
+        taskItem.Description,
+        taskItem.Status,
+        taskItem.AssignedUser?.Name ?? "Unassigned");
+
+        return Results.Ok(response);
+    }
+    catch (TaskNotFoundException)
+    {
+        return Results.NotFound();
+    }
+    catch (UserNotFoundException)
+    {
+        return Results.UnprocessableEntity(request.UserId);
+    }
+});
+
 app.Run();
 
 record AssignTaskRequest(Guid UserId, string TaskTitle);
 
 record TaskResponse(Guid Id, string Title, string? Description, bool Status, string UserName);
 record CreateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
+record UpdateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
