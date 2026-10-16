@@ -69,7 +69,8 @@ app.MapGet("api/tasks", async (TaskService service) =>
         t.Title,
         t.Description,
         t.Status,
-        t.AssignedUser?.Name ?? "Unassigned"));
+        t.AssignedUser?.Name ?? "Unassigned",
+        t.AssignedUser?.Id));
 
     return Results.Ok(response);
 });
@@ -87,7 +88,8 @@ app.MapGet("api/tasks/{id}", async (Guid id, TaskService service) =>
         task.Title,
         task.Description,
         task.Status,
-        task.AssignedUser?.Name ?? "Unassigned");
+        task.AssignedUser?.Name ?? "Unassigned",
+        task.AssignedUser?.Id);
 
         return Results.Ok(response);
     }
@@ -151,7 +153,8 @@ app.MapPut("api/tasks/{id}", async (Guid id, UpdateTaskRequest request, TaskServ
         taskItem.Title,
         taskItem.Description,
         taskItem.Status,
-        taskItem.AssignedUser?.Name ?? "Unassigned");
+        taskItem.AssignedUser?.Name ?? "Unassigned",
+        taskItem.AssignedUser?.Id);
 
         return Results.Ok(response);
     }
@@ -169,6 +172,6 @@ app.Run();
 
 record AssignTaskRequest(Guid UserId, string TaskTitle);
 
-record TaskResponse(Guid Id, string Title, string? Description, bool Status, string UserName);
+record TaskResponse(Guid Id, string Title, string? Description, bool Status, string UserName, Guid? UserId);
 record CreateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
 record UpdateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);

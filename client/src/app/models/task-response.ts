@@ -4,4 +4,5 @@ export interface TaskResponse{
     description: string | null;
     status: boolean;
     userName: string;
+    userId: string | null;
 }
