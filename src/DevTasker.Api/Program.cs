@@ -42,7 +42,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("AngularClient");
 
@@ -175,3 +178,5 @@ record AssignTaskRequest(Guid UserId, string TaskTitle);
 record TaskResponse(Guid Id, string Title, string? Description, bool Status, string UserName, Guid? UserId);
 record CreateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
 record UpdateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
+
+public partial class Program { }
