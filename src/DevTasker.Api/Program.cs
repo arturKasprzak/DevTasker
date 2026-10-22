@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 using DevTasker.Application;
 using DevTasker.Domain;
 using DevTasker.Infrastructure;
@@ -33,7 +31,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<DevTaskerDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    //options.UseSqlServer(connectionString)
+    options.UseNpgsql(connectionString)
+    );
 
 var app = builder.Build();
 
