@@ -11,11 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
 builder.Services.AddScoped<INotificationSender, EmailNotificationSender>();
 builder.Services.AddScoped<IUserRepository, EfUserRepository>();
 builder.Services.AddScoped<ITaskRepository, EfTaskRepository>();
 builder.Services.AddScoped<TaskAssignedNotificationService>();
-builder.Services.AddScoped<TaskService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 
 builder.Services.AddCors(options =>
@@ -48,6 +49,7 @@ if (!app.Environment.IsEnvironment("Testing"))
 }
 
 app.UseCors("AngularClient");
+app.MapControllers();
 
 app.MapPost("api/tasks/assign", async (AssignTaskRequest request, TaskAssignedNotificationService service) =>
 {
@@ -63,7 +65,7 @@ app.MapPost("api/tasks/assign", async (AssignTaskRequest request, TaskAssignedNo
     }
 });
 
-app.MapGet("api/tasks", async (TaskService service) =>
+app.MapGet("api/tasks", async (ITaskService service) =>
 {
     var tasks = await service.GetAllTaskItemsAsync();
 
@@ -78,7 +80,7 @@ app.MapGet("api/tasks", async (TaskService service) =>
     return Results.Ok(response);
 });
 
-app.MapGet("api/tasks/{id}", async (Guid id, TaskService service) =>
+app.MapGet("api/tasks/{id}", async (Guid id, ITaskService service) =>
 {
     try
     {
@@ -102,7 +104,7 @@ app.MapGet("api/tasks/{id}", async (Guid id, TaskService service) =>
     }
 });
 
-app.MapPost("api/tasks", async (CreateTaskRequest request, TaskService service, IUserRepository userRepo) =>
+app.MapPost("api/tasks", async (CreateTaskRequest request, ITaskService service, IUserRepository userRepo) =>
 {
     try
     {
@@ -125,7 +127,7 @@ app.MapPost("api/tasks", async (CreateTaskRequest request, TaskService service, 
     }
 });
 
-app.MapDelete("api/tasks/{id}", async (Guid id, TaskService service) =>
+app.MapDelete("api/tasks/{id}", async (Guid id, ITaskService service) =>
 {
     try
     {
@@ -140,7 +142,7 @@ app.MapDelete("api/tasks/{id}", async (Guid id, TaskService service) =>
     }
 });
 
-app.MapPut("api/tasks/{id}", async (Guid id, UpdateTaskRequest request, TaskService service) =>
+app.MapPut("api/tasks/{id}", async (Guid id, UpdateTaskRequest request, ITaskService service) =>
 {
     try
     {
@@ -173,10 +175,9 @@ app.MapPut("api/tasks/{id}", async (Guid id, UpdateTaskRequest request, TaskServ
 
 app.Run();
 
-record AssignTaskRequest(Guid UserId, string TaskTitle);
-
-record TaskResponse(Guid Id, string Title, string? Description, bool Status, string UserName, Guid? UserId);
-record CreateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
-record UpdateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
+public record AssignTaskRequest(Guid UserId, string TaskTitle);
+public record TaskResponse(Guid Id, string Title, string? Description, bool Status, string UserName, Guid? UserId);
+public record CreateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
+public record UpdateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
 
 public partial class Program { }

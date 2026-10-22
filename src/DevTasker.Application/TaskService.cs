@@ -2,7 +2,7 @@
 using DevTasker.Domain;
 
 namespace DevTasker.Application;
-public class TaskService
+public class TaskService : ITaskService
 {
     private readonly ITaskRepository _taskRepository;
 
