@@ -2,6 +2,7 @@ using DevTasker.Application;
 using DevTasker.Domain;
 using DevTasker.Infrastructure;
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,8 @@ builder.Services.AddDbContext<DevTaskerDbContext>(options =>
     //options.UseSqlServer(connectionString)
     options.UseNpgsql(connectionString)
     );
+builder.Services.AddHealthChecks()
+    .AddNpgSql(connectionString);
 
 var app = builder.Build();
 
@@ -50,6 +53,8 @@ if (!app.Environment.IsEnvironment("Testing"))
 
 app.UseCors("AngularClient");
 app.MapControllers();
+
+app.MapHealthChecks("/health");
 
 app.MapPost("api/tasks/assign", async (AssignTaskRequest request, TaskAssignedNotificationService service) =>
 {
