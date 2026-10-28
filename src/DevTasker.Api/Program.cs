@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 using DevTasker.Application;
 using DevTasker.Domain;
 using DevTasker.Infrastructure;
@@ -182,7 +184,7 @@ app.Run();
 
 public record AssignTaskRequest(Guid UserId, string TaskTitle);
 public record TaskResponse(Guid Id, string Title, string? Description, bool Status, string UserName, Guid? UserId);
-public record CreateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
-public record UpdateTaskRequest(string Title, string? Description, bool? Status, Guid? UserId);
+public record CreateTaskRequest([Required] [MaxLength(256)] string Title, string? Description, bool? Status, Guid? UserId);
+public record UpdateTaskRequest([Required][MaxLength(256)] string Title, string? Description, bool? Status, Guid? UserId);
 
 public partial class Program { }
