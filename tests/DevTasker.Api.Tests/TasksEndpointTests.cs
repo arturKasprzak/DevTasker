@@ -84,4 +84,22 @@ public class TasksEndpointTests : IClassFixture<DevTaskerWebApplicationFactory>
         Assert.NotNull(createdTaskId);
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
+
+    [Fact]
+    public async Task CreateTask_EmptyTitle_ReturnsBadReques()
+    {
+        // Act
+
+        var response = await _client.PostAsJsonAsync("/api/mvc/tasks", new
+        {
+            title = "",
+            description = (string?)null,
+            status = (bool?)null,
+            userId = (Guid?)null
+        });
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }
