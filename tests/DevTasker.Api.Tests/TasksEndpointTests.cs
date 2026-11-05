@@ -61,6 +61,22 @@ public class TasksEndpointTests : IClassFixture<DevTaskerWebApplicationFactory>
     }
 
     [Fact]
+    public async Task GetTaskByIdMvc_NonExistentId_ReturnsNotFound()
+    {
+        // Arrange
+
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+
+        var response = await _client.GetAsync($"/api/mvc/tasks/{nonExistentId}");
+
+        // Assert
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task DeleteTask_WhenCalled_ReturnsNoContent()
     {
         // Arrange                

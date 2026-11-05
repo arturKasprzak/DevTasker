@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
+using DevTasker.Api;
 using DevTasker.Application;
 using DevTasker.Domain;
 using DevTasker.Infrastructure;
@@ -13,6 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+builder.Services.AddExceptionHandler<ExceptionHandling>();
+builder.Services.AddProblemDetails();
 builder.Services.AddScoped<INotificationSender, EmailNotificationSender>();
 builder.Services.AddScoped<IUserRepository, EfUserRepository>();
 builder.Services.AddScoped<ITaskRepository, EfTaskRepository>();
@@ -42,11 +45,14 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
 
 if (!app.Environment.IsEnvironment("Testing"))
 {

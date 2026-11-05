@@ -32,12 +32,10 @@ public class TasksControllerTests
             .ReturnsAsync((TaskItem?)null);
 
         // Act
-
-        var result = await _sut.GetById(newId);
-
         // Assert
 
-        Assert.IsType<NotFoundResult>(result);
+        await Assert.ThrowsAsync<TaskNotFoundException>(
+            () => _sut.GetById(newId));
     }
 
     [Fact]

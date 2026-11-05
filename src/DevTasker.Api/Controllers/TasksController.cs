@@ -37,26 +37,19 @@ public class TasksController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        try
-        {
-            var task = await _taskService.GetTaskItemAsync(id);
-            if (task is null)
-                throw new TaskNotFoundException(id);
+        var task = await _taskService.GetTaskItemAsync(id);
+        if (task is null)
+            throw new TaskNotFoundException(id);
 
-            var response = new TaskResponse(
-            task.Id,
-            task.Title,
-            task.Description,
-            task.Status,
-            task.AssignedUser?.Name ?? "Unassigned",
-            task.AssignedUser?.Id);
+        var response = new TaskResponse(
+        task.Id,
+        task.Title,
+        task.Description,
+        task.Status,
+        task.AssignedUser?.Name ?? "Unassigned",
+        task.AssignedUser?.Id);
 
-            return Ok(response);
-        }
-        catch (TaskNotFoundException)
-        {
-            return NotFound();
-        }
+        return Ok(response);
     }
 
     [HttpPost]
