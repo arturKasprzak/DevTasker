@@ -16,6 +16,13 @@ public class ExceptionHandling : IExceptionHandler
             return ValueTask.FromResult(true);
         }
 
+        if (exception is UserNotFoundException)
+        {
+            httpContext.Response.StatusCode = StatusCodes.Status422UnprocessableEntity;
+
+            return ValueTask.FromResult(true);
+        }
+
         return ValueTask.FromResult(false);
     }
 }

@@ -98,6 +98,7 @@ public class TasksEndpointTests : IClassFixture<DevTaskerWebApplicationFactory>
         // Assert
 
         Assert.NotNull(createdTaskId);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
@@ -117,5 +118,36 @@ public class TasksEndpointTests : IClassFixture<DevTaskerWebApplicationFactory>
         // Assert
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateTask_WrongUserId_ReturnsUnprocessableEntity()
+    {
+        // Arrange
+
+        var createResponse = await _client.PostAsJsonAsync("/api/mvc/tasks", new
+        {
+            title = "Test Task",
+            description = (string?)null,
+            status = (bool?)null,
+            userId = (Guid?)null
+        });
+
+        var createdTaskId = await createResponse.Content.ReadFromJsonAsync<Guid>();
+
+        // Act
+
+        var response = await _client.PutAsJsonAsync($"/api/mvc/tasks/{createdTaskId}", new
+        {
+            title = "Test",
+            description = (string?)null,
+            status = (bool?)null,
+            userId = Guid.NewGuid()
+        });
+
+        // Assert
+
+        Assert.NotNull(createdTaskId);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 }

@@ -55,72 +55,47 @@ public class TasksController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create(CreateTaskRequest request)
     {
-        try
+        User? user = null;
+        if (request.UserId.HasValue)
         {
-            User? user = null;
-            if (request.UserId.HasValue)
-            {
-                user = await _userRepository.GetByIdAsync(request.UserId.Value);
-                if (user is null)
-                    throw new UserNotFoundException(request.UserId.Value);
-            }
-
-            var taskItem = new TaskItem(request.Title, request.Description, request.Status, user);
-            await _taskService.AddNewTaskItemAsync(taskItem);
-
-            return CreatedAtAction(nameof(GetById), new { id = taskItem.Id}, taskItem.Id);
+            user = await _userRepository.GetByIdAsync(request.UserId.Value);
+            if (user is null)
+                throw new UserNotFoundException(request.UserId.Value);
         }
-        catch (UserNotFoundException)
-        {
-            return NotFound();
-        }
+
+        var taskItem = new TaskItem(request.Title, request.Description, request.Status, user);
+        await _taskService.AddNewTaskItemAsync(taskItem);
+
+        return CreatedAtAction(nameof(GetById), new { id = taskItem.Id}, taskItem.Id);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, UpdateTaskRequest request)
     {
-        try
+        var appRequest = new UpdateTaskItemRequest(request.Title, request.Description, request.Status, request.UserId);
+        var taskItem = await _taskService.UpdateTaskItemAsync(id, appRequest);
+        if (taskItem is null)
         {
-            var appRequest = new UpdateTaskItemRequest(request.Title, request.Description, request.Status, request.UserId);
-            var taskItem = await _taskService.UpdateTaskItemAsync(id, appRequest);
-            if (taskItem is null)
-            {
-                throw new TaskNotFoundException(id);
-            }
+            throw new TaskNotFoundException(id);
+        }
 
-            var response = new TaskResponse(
-            taskItem.Id,
-            taskItem.Title,
-            taskItem.Description,
-            taskItem.Status,
-            taskItem.AssignedUser?.Name ?? "Unassigned",
-            taskItem.AssignedUser?.Id);
+        var response = new TaskResponse(
+        taskItem.Id,
+        taskItem.Title,
+        taskItem.Description,
+        taskItem.Status,
+        taskItem.AssignedUser?.Name ?? "Unassigned",
+        taskItem.AssignedUser?.Id);
 
-            return Ok(response);
-        }
-        catch (TaskNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (UserNotFoundException)
-        {
-            return UnprocessableEntity(request.UserId);
-        }
+        return Ok(response);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        try
-        {
-            var taskItem = await _taskService.RemoveTaskItemAsync(id);
-            if (taskItem is null)
-                throw new TaskNotFoundException(id);
-            return NoContent();
-        }
-        catch (TaskNotFoundException)
-        {
-            return NotFound();
-        }
+        var taskItem = await _taskService.RemoveTaskItemAsync(id);
+        if (taskItem is null)
+            throw new TaskNotFoundException(id);
+        return NoContent();
     }
 }

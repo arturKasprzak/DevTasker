@@ -66,16 +66,9 @@ app.MapHealthChecks("/health");
 
 app.MapPost("api/tasks/assign", async (AssignTaskRequest request, TaskAssignedNotificationService service) =>
 {
-    try
-    {
-        await service.NotifyTaskAssignedAsync(request.UserId, request.TaskTitle);
+    await service.NotifyTaskAssignedAsync(request.UserId, request.TaskTitle);
 
-        return Results.Ok();
-    }
-    catch (UserNotFoundException)
-    {
-        return Results.NotFound();
-    }
+    return Results.Ok();
 });
 
 app.MapGet("api/tasks", async (ITaskService service) =>
@@ -95,95 +88,63 @@ app.MapGet("api/tasks", async (ITaskService service) =>
 
 app.MapGet("api/tasks/{id}", async (Guid id, ITaskService service) =>
 {
-    try
-    {
-        var task = await service.GetTaskItemAsync(id);
-        if (task is null)
-            throw new TaskNotFoundException(id);
+    var task = await service.GetTaskItemAsync(id);
+    if (task is null)
+        throw new TaskNotFoundException(id);
 
-        var response = new TaskResponse(
-        task.Id,
-        task.Title,
-        task.Description,
-        task.Status,
-        task.AssignedUser?.Name ?? "Unassigned",
-        task.AssignedUser?.Id);
+    var response = new TaskResponse(
+    task.Id,
+    task.Title,
+    task.Description,
+    task.Status,
+    task.AssignedUser?.Name ?? "Unassigned",
+    task.AssignedUser?.Id);
 
-        return Results.Ok(response);
-    }
-    catch (TaskNotFoundException)
-    {
-        return Results.NotFound();
-    }
+    return Results.Ok(response);
 });
 
 app.MapPost("api/tasks", async (CreateTaskRequest request, ITaskService service, IUserRepository userRepo) =>
 {
-    try
+    User? user = null;
+    if (request.UserId.HasValue)
     {
-        User? user = null;
-        if (request.UserId.HasValue)
-        {
-            user = await userRepo.GetByIdAsync(request.UserId.Value);
-            if (user is null)
-                throw new UserNotFoundException(request.UserId.Value);
-        }
-
-        var taskItem = new TaskItem(request.Title, request.Description, request.Status, user);
-        await service.AddNewTaskItemAsync(taskItem);
-
-        return Results.Created($"/api/tasks/{taskItem.Id}", taskItem.Id);
+        user = await userRepo.GetByIdAsync(request.UserId.Value);
+        if (user is null)
+            throw new UserNotFoundException(request.UserId.Value);
     }
-    catch (UserNotFoundException)
-    {
-        return Results.NotFound();
-    }
+
+    var taskItem = new TaskItem(request.Title, request.Description, request.Status, user);
+    await service.AddNewTaskItemAsync(taskItem);
+
+    return Results.Created($"/api/tasks/{taskItem.Id}", taskItem.Id);
 });
 
 app.MapDelete("api/tasks/{id}", async (Guid id, ITaskService service) =>
 {
-    try
-    {
-        var taskItem = await service.RemoveTaskItemAsync(id);
-        if (taskItem is null)
-            throw new TaskNotFoundException(id);
-        return Results.NoContent();
-    }
-    catch (TaskNotFoundException)
-    {
-        return Results.NotFound();
-    }
+    var taskItem = await service.RemoveTaskItemAsync(id);
+    if (taskItem is null)
+        throw new TaskNotFoundException(id);
+    return Results.NoContent();
 });
 
 app.MapPut("api/tasks/{id}", async (Guid id, UpdateTaskRequest request, ITaskService service) =>
 {
-    try
+    var appRequest = new UpdateTaskItemRequest(request.Title, request.Description, request.Status, request.UserId);
+    var taskItem = await service.UpdateTaskItemAsync(id, appRequest);
+    if (taskItem is null)
     {
-        var appRequest = new UpdateTaskItemRequest(request.Title, request.Description, request.Status, request.UserId);
-        var taskItem = await service.UpdateTaskItemAsync(id, appRequest);
-        if (taskItem is null)
-        {
-            throw new TaskNotFoundException(id);
-        }
+        throw new TaskNotFoundException(id);
+    }
 
-        var response = new TaskResponse(
-        taskItem.Id,
-        taskItem.Title,
-        taskItem.Description,
-        taskItem.Status,
-        taskItem.AssignedUser?.Name ?? "Unassigned",
-        taskItem.AssignedUser?.Id);
+    var response = new TaskResponse(
+    taskItem.Id,
+    taskItem.Title,
+    taskItem.Description,
+    taskItem.Status,
+    taskItem.AssignedUser?.Name ?? "Unassigned",
+    taskItem.AssignedUser?.Id);
 
-        return Results.Ok(response);
-    }
-    catch (TaskNotFoundException)
-    {
-        return Results.NotFound();
-    }
-    catch (UserNotFoundException)
-    {
-        return Results.UnprocessableEntity(request.UserId);
-    }
+    return Results.Ok(response);
 });
 
 app.Run();
